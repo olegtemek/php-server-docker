@@ -1,0 +1,55 @@
+version: '3'
+services:
+
+  nginx:
+    container_name: nginx_php
+    restart: always
+    build:
+      context: .
+      dockerfile: ./.docker/nginx/Dockerfile
+    ports:
+      - 8000:80
+    volumes:
+      - ../../Projects/Php/agrotech/backend/:/var/www/app/ #path to your project
+      # - ../../Projects/Php/agrotech/backend/system/:/var/www/ #!opencart
+    networks:
+      - app_network_php
+
+  mysql:
+    container_name: mysql_php
+    image: mysql:8.0
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./.docker/mysql/:/var/lib/mysql
+    networks:
+      - app_network_php
+
+  php-fpm:
+    container_name: php-fpm_php
+    build:
+      context: .
+      dockerfile: ./.docker/fpm/Dockerfile
+    volumes:
+      - ../../Projects/Php/agrotech/backend/:/var/www/app/ #path to your project
+      # - ../../Projects/Php/agrotech/backend/system/:/var/www/ #!opencart
+    networks:
+      - app_network_php
+
+  adminer:
+    container_name: adminer_php
+    image: adminer:latest
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql
+    ports:
+      - 8080:8080
+    depends_on:
+      - mysql
+    networks:
+      - app_network_php
+
+networks:
+  app_network_php:
